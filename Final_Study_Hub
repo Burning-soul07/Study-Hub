@@ -1,0 +1,412 @@
+import 'package:flutter/material.dart';
+import 'dart:math';
+
+void main() {
+  runApp(StudyHubApp());
+}
+
+/* ===================== FAKE BACKEND ===================== */
+
+class FakeBackend {
+  static final Map<String, String> _users = {};
+
+  static bool signUp(String email, String password) {
+    if (_users.containsKey(email)) return false;
+    _users[email] = password;
+    return true;
+  }
+
+  static bool login(String email, String password) {
+    return _users[email] == password;
+  }
+}
+
+/* ===================== APP ===================== */
+
+class StudyHubApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: 'login',
+      routes: {
+        'login': (context) => LoginPagee(),
+        'signup': (context) => SignPagee(),
+      },
+    );
+  }
+}
+
+/* ===================== LOGIN PAGE ===================== */
+
+class LoginPagee extends StatefulWidget {
+  @override
+  State<LoginPagee> createState() => _LoginPageeState();
+}
+
+class _LoginPageeState extends State<LoginPagee> {
+  bool _obscurePassword = true;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  void _login() {
+    bool ok = FakeBackend.login(
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    );
+
+    if (ok) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => StudentHomeScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Invalid email or password")));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.blue.shade100,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              children: [
+                Text(
+                  "StudyHub",
+                  style: TextStyle(
+                    fontSize: 38,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E3354),
+                  ),
+                ),
+                SizedBox(height: 40),
+
+                _input("Email", emailController),
+                SizedBox(height: 18),
+
+                _passwordField(),
+                SizedBox(height: 30),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF2C64E3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: _login,
+                    child: Text(
+                      "Log In",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Don't have an account?"),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, 'signup'),
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(
+                          color: Color(0xFF2C64E3),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _input(String hint, TextEditingController c) {
+    return TextField(
+      controller: c,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    );
+  }
+
+  Widget _passwordField() {
+    return TextField(
+      controller: passwordController,
+      obscureText: _obscurePassword,
+      decoration: InputDecoration(
+        hintText: "Password",
+        filled: true,
+        fillColor: Colors.white,
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+          ),
+          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    );
+  }
+}
+
+/* ===================== SIGN UP PAGE ===================== */
+
+class SignPagee extends StatefulWidget {
+  @override
+  State<SignPagee> createState() => _SignPageeState();
+}
+
+class _SignPageeState extends State<SignPagee> {
+  bool _obscurePassword = true;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  void _signup() {
+    bool ok = FakeBackend.signUp(
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok ? "Account created. Login now." : "User already exists",
+        ),
+      ),
+    );
+
+    if (ok) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.blue.shade100,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              children: [
+                Text(
+                  "StudyHub",
+                  style: TextStyle(
+                    fontSize: 38,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E3354),
+                  ),
+                ),
+                SizedBox(height: 40),
+
+                _input("Email", emailController),
+                SizedBox(height: 18),
+
+                TextField(
+                  controller: passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    hintText: "Password",
+                    filled: true,
+                    fillColor: Colors.white,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF2C64E3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: _signup,
+                    child: Text(
+                      "Sign Up",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _input(String hint, TextEditingController c) {
+    return TextField(
+      controller: c,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    );
+  }
+}
+
+/* ===================== HOME SCREEN (RESTORED UI) ===================== */
+
+class StudentHomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          "StudyHub",
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: CircleAvatar(
+              backgroundColor: Color(0xFFE0E0E0),
+              child: Icon(Icons.person, color: Colors.grey),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 0,
+        selectedItemColor: Colors.blue[700],
+        unselectedItemColor: Colors.grey,
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_outlined),
+            label: 'Tests',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.description_outlined),
+            label: 'Notes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Attendance",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+
+            Center(
+              child: SizedBox(
+                height: 120,
+                width: 120,
+                child: CustomPaint(
+                  painter: AttendancePainter(attendancePercent: 0.87),
+                  child: Center(
+                    child: Text(
+                      "87%",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/* ===================== DONUT CHART ===================== */
+
+class AttendancePainter extends CustomPainter {
+  final double attendancePercent;
+  AttendancePainter({required this.attendancePercent});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint p = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 18;
+
+    double c = size.width / 2;
+    double r = (size.width - p.strokeWidth) / 2;
+
+    p.color = Colors.orange;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(c, c), radius: r),
+      -pi / 2,
+      2 * pi,
+      false,
+      p,
+    );
+
+    p.color = Colors.green;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(c, c), radius: r),
+      -pi / 2,
+      2 * pi * attendancePercent,
+      false,
+      p,
+    );
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
